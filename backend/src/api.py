@@ -19,6 +19,10 @@ CORS(app)
 # db_drop_and_create_all()
 
 ## ROUTES
+
+@app.route("/")
+def hello():
+    return jsonify({"message":"hello"})
 '''
 @TODO implement endpoint
     GET /drinks

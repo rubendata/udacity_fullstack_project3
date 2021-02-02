@@ -2,6 +2,12 @@ venv/
 .vscode/
 __pycache__/
 test.db
+env
+node_modules
+packages
+.o
+.pcy
+how to virtual env.txt
 
 # OS generated files #
 ######################
