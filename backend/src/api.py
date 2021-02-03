@@ -16,13 +16,25 @@ CORS(app)
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 ## ROUTES
 
 @app.route("/")
 def hello():
     return jsonify({"message":"hello"})
+
+@app.route("/drinks", methods=["GET"])
+def get_drinks():
+    drinks = Drink.query.all()
+    print(drinks)
+    drinks = [drink.short() for drink in drinks]
+
+    return jsonify({
+        "success": True,
+        "drinks": drinks
+        
+    })
 '''
 @TODO implement endpoint
     GET /drinks
@@ -42,6 +54,25 @@ def hello():
         or appropriate status code indicating reason for failure
 '''
 
+
+@app.route("/drinks", methods=["POST"])
+def create_drink():
+    try:
+        body = request.get_json()
+        drink = Drink(
+            title=body.get("title"),
+            recipe=json.dumps(body.get("recipe"))
+        )
+        
+        drink.insert()
+        
+        return jsonify({
+            "success":True,
+            "drink":drink.long()
+        })
+    except BaseException as e:
+        print(e)
+        abort(401)
 
 '''
 @TODO implement endpoint
