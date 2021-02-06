@@ -60,48 +60,63 @@ def create_drink():
         abort(401)
 
 
-@app.route("/drinks/<id>", methods=["PATCH"])
-def edit_drink(id):
+@app.route("/drinks/<id>", methods=["GET","PATCH", "DELETE"])
+def specific_drink(id):
     #TODO: 
     # it should respond with a 404 error if <id> is not found, 
     # it should require the 'patch:drinks' permission
-    body = request.get_json()
-    # print(body)
-    drink_attributes = []
+    if request.method=="PATCH":
+        try:
+            body = request.get_json()
+            drink = Drink.query.filter_by(id=id).one_or_none()
+            for i in body: 
+                '''
+                The input for body can be flexibel: title, title+recipe, recipe
+                So used this variable for loop to get whatever is typed in
+                and use this data to patch the item
+                '''
+                #print(f"key: {i}, value:{body.get(i)}")
+                # print(f"before: {getattr(drink, i)}")
+                if type(body.get(i)) == list:
+                    setattr(drink, i, json.dumps(body.get(i)))
+                else:
+                    setattr(drink, i, body.get(i))
+                # print(f"after: {getattr(drink, i)}")
+            drink.update()
+            drink = drink.long()
+            return jsonify({
+                "success":True,
+                "drink":drink
+            })
+        except BaseException as e:
+            print(e)
+            abort(400)
+    if request.method=="DELETE":
+        try:
+            drink = Drink.query.filter_by(id=id).one_or_none()
+            print(drink)
+            drink.delete()
+            return jsonify({
+                "success":True,
+                "deleted_id":id
+            })
+        except BaseException as e:
+            print(e)
+            abort(400)
+    else:
+        try:
+            drink = Drink.query.filter_by(id=id).one_or_none()
+            drink.long()
+            return jsonify({
+                "success":True,
+                "drink":drink
+            })
+        except BaseException as e:
+            print(e)
+            abort(400)
+
+
     
-    drink = Drink.query.filter_by(id=id).one_or_none()
-    for i in body: 
-        '''
-        The input for body can be flexibel: title, title+recipe, recipe
-        So used this variable for loop to get whatever is typed in
-        and use this data to patch the item
-        '''
-        #print(f"key: {i}, value:{body.get(i)}")
-        print(f"before: {getattr(drink, i)}")
-        if type(body.get(i)) == list:
-            setattr(drink, i, json.dumps(body.get(i)))
-        else:
-            setattr(drink, i, body.get(i))
-        print(f"after: {getattr(drink, i)}")
-
-    drink.update()
-    
-    drink = drink.long()
-
-    return jsonify({
-        "success":True,
-        "drink":drink
-    })
-
-'''
-@TODO implement endpoint
-    PATCH /drinks/<id>
-        where <id> is the existing model id
-        it should update the corresponding row for <id>
-    
-'''
-
-
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
