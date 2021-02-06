@@ -57,7 +57,7 @@ def check_permissions(permissions, payload):
     if "permissions" not in payload:
         abort(400)
     if permissions not in payload["permissions"]:
-        abort(403)
+        abort(401)
     return True
 
 def verify_decode_jwt(token):
