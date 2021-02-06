@@ -92,17 +92,18 @@ def specific_drink(id):
             print(e)
             abort(400)
     if request.method=="DELETE":
+        #TODO:  it should require the 'delete:drinks' permission
         try:
             drink = Drink.query.filter_by(id=id).one_or_none()
             print(drink)
             drink.delete()
             return jsonify({
                 "success":True,
-                "deleted_id":id
+                "delete":id
             })
         except BaseException as e:
             print(e)
-            abort(400)
+            abort(404)
     else:
         try:
             drink = Drink.query.filter_by(id=id).one_or_none()
@@ -113,21 +114,10 @@ def specific_drink(id):
             })
         except BaseException as e:
             print(e)
-            abort(400)
+            abort(404)
 
 
     
-'''
-@TODO implement endpoint
-    DELETE /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should delete the corresponding row for <id>
-        it should require the 'delete:drinks' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
-        or appropriate status code indicating reason for failure
-'''
-
 
 ## Error Handling
 '''
@@ -141,21 +131,32 @@ def unprocessable(error):
                     "message": "unprocessable"
                     }), 422
 
-'''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
                     "success": False, 
                     "error": 404,
-                    "message": "resource not found"
+                    "message": "not found"
                     }), 404
 
-'''
+@app.errorhandler(401)
+def unauthorized(error):
+    return jsonify({
+                    "success": False, 
+                    "error": 401,
+                    "message": "unauthorized"
+                    }), 401
 
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
+@app.errorhandler(405)
+def method_not_allowed(error):
+    return jsonify({
+                    "success": False, 
+                    "error": 405,
+                    "message": "method not allowed"
+                    }), 405
+
+
+
 
 
 '''
