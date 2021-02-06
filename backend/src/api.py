@@ -19,7 +19,7 @@ CORS(app)
 #db_drop_and_create_all()
 
 ## ROUTES
-@app.route("/drinks", methods=["GET"])
+@app.route("/drinks", methods=["GET"]) #public endpoint
 def get_drinks():
     #TODO: error handling
     drinks = Drink.query.all()
@@ -30,20 +30,22 @@ def get_drinks():
     })
 
 @app.route("/drinks-detail", methods=["GET"])
-def get_drinks_detail():
-    #TODO: 
-    # 1) 1error handling
-    # 2) it should require the 'get:drinks-detail' permission
-    drinks = Drink.query.all()
-    drinks = [drink.long() for drink in drinks]
-    return jsonify({
-        "success": True,
-        "drinks": drinks
-    })
+@requires_auth("get:drinks-detail")
+def get_drinks_detail(jwt):
+    try:
+        drinks = Drink.query.all()
+        drinks = [drink.long() for drink in drinks]
+        return jsonify({
+            "success": True,
+            "drinks": drinks
+        })
+    except BaseException as e:
+        print(e)
+        abort(401)
 
 @app.route("/drinks", methods=["POST"])
-def create_drink():
-    #TODO: it should require the 'post:drinks' permission
+@requires_auth("post:drinks")
+def create_drink(jwt):
     try:
         body = request.get_json()
         drink = Drink(
@@ -61,11 +63,8 @@ def create_drink():
 
 
 @app.route("/drinks/<id>", methods=["PATCH"])
+@requires_auth("patch:drinks")
 def specific_drink(id):
-    #TODO: 
-    # it should respond with a 404 error if <id> is not found, 
-    # it should require the 'patch:drinks' permission
-    
     try:
         body = request.get_json()
         drink = Drink.query.filter_by(id=id).one_or_none()
@@ -90,14 +89,13 @@ def specific_drink(id):
         })
     except BaseException as e:
         print(e)
-        abort(400)
+        abort(404)
 
     
 
 @app.route("/drinks/<id>", methods=["DELETE"])
+@requires_auth("delete:drinks")
 def delete_drink(id):
-    
-    #TODO:  it should require the 'delete:drinks' permission
     try:
         drink = Drink.query.filter_by(id=id).one_or_none()
         print(drink)
