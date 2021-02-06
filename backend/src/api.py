@@ -16,56 +16,41 @@ CORS(app)
 !! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 '''
-db_drop_and_create_all()
+#db_drop_and_create_all()
 
 ## ROUTES
-
-@app.route("/")
-def hello():
-    return jsonify({"message":"hello"})
-
 @app.route("/drinks", methods=["GET"])
 def get_drinks():
+    #TODO: error handling
     drinks = Drink.query.all()
-    print(drinks)
     drinks = [drink.short() for drink in drinks]
-
     return jsonify({
         "success": True,
         "drinks": drinks
-        
     })
-'''
-@TODO implement endpoint
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
 
-
-'''
-@TODO implement endpoint
-    GET /drinks-detail
-        it should require the 'get:drinks-detail' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
-
+@app.route("/drinks-detail", methods=["GET"])
+def get_drinks_detail():
+    #TODO: 
+    # 1) 1error handling
+    # 2) it should require the 'get:drinks-detail' permission
+    drinks = Drink.query.all()
+    drinks = [drink.long() for drink in drinks]
+    return jsonify({
+        "success": True,
+        "drinks": drinks
+    })
 
 @app.route("/drinks", methods=["POST"])
 def create_drink():
+    #TODO: it should require the 'post:drinks' permission
     try:
         body = request.get_json()
         drink = Drink(
             title=body.get("title"),
             recipe=json.dumps(body.get("recipe"))
         )
-        
         drink.insert()
-        
         return jsonify({
             "success":True,
             "drink":drink.long()
@@ -74,27 +59,46 @@ def create_drink():
         print(e)
         abort(401)
 
-'''
-@TODO implement endpoint
-    POST /drinks
-        it should create a new row in the drinks table
-        it should require the 'post:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
-        or appropriate status code indicating reason for failure
-'''
 
+@app.route("/drinks/<id>", methods=["PATCH"])
+def edit_drink(id):
+    #TODO: 
+    # it should respond with a 404 error if <id> is not found, 
+    # it should require the 'patch:drinks' permission
+    body = request.get_json()
+    # print(body)
+    drink_attributes = []
+    
+    drink = Drink.query.filter_by(id=id).one_or_none()
+    for i in body: 
+        '''
+        The input for body can be flexibel: title, title+recipe, recipe
+        So used this variable for loop to get whatever is typed in
+        and use this data to patch the item
+        '''
+        #print(f"key: {i}, value:{body.get(i)}")
+        print(f"before: {getattr(drink, i)}")
+        if type(body.get(i)) == list:
+            setattr(drink, i, json.dumps(body.get(i)))
+        else:
+            setattr(drink, i, body.get(i))
+        print(f"after: {getattr(drink, i)}")
+
+    drink.update()
+    
+    drink = drink.long()
+
+    return jsonify({
+        "success":True,
+        "drink":drink
+    })
 
 '''
 @TODO implement endpoint
     PATCH /drinks/<id>
         where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
         it should update the corresponding row for <id>
-        it should require the 'patch:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
-        or appropriate status code indicating reason for failure
+    
 '''
 
 
