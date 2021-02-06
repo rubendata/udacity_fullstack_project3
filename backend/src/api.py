@@ -83,7 +83,7 @@ def specific_drink(jwt, id):
             So used this variable for loop to get whatever is typed in
             and use this data to patch the item
             '''
-            #print(f"key: {i}, value:{body.get(i)}")
+            # print(f"key: {i}, value:{body.get(i)}")
             # print(f"before: {getattr(drink, i)}")
             if i == "recipe" and not isinstance(i, list):
                 return abort(400)

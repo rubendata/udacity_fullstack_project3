@@ -9,18 +9,20 @@ AUTH0_DOMAIN = 'udarub.eu.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'coffee'
 
-## AuthError Exception
+# AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
 
 
-## Auth Header
+# Auth Header
 def get_token_auth_header():
     """Obtains the Access Token from the Authorization Header
     """
@@ -53,12 +55,14 @@ def get_token_auth_header():
     token = parts[1]
     return token
 
+
 def check_permissions(permissions, payload):
     if "permissions" not in payload:
         abort(400)
     if permissions not in payload["permissions"]:
         abort(401)
     return True
+
 
 def verify_decode_jwt(token):
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
@@ -109,9 +113,9 @@ def verify_decode_jwt(token):
                 'description': 'Unable to parse authentication token.'
             }, 400)
     raise AuthError({
-                'code': 'invalid_header',
+        'code': 'invalid_header',
                 'description': 'Unable to find the appropriate key.'
-            }, 400)
+    }, 400)
 
 
 def requires_auth(permission=''):
